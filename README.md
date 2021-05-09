@@ -31,5 +31,4 @@ optional arguments:
                         target.
   -v, --verbose         More verbose output of status
                         information
-
 ```
