@@ -53,7 +53,7 @@ def main():
             proxy_thread.start()
     except KeyboardInterrupt:
         print("CTRL+C detected, gracefully stopping the service")
-
+        sys.exit()
 
 def new_proxy(local_socket, args, inplugins, outplugins):
     remote_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -88,34 +88,32 @@ def new_proxy(local_socket, args, inplugins, outplugins):
                     print(f"{time.strftime('%Y%m%d-%H%M%S')}: Socket exception in new_proxy")
                     raise serror
 
-        data = receive_from(sock)
+            data = receive_from(sock)
 
-        if(sock == local_socket):
-            if(len(data)):
-                # todo logs of outgoing data >>>
-                if(outplugins is not None):
-                    for plugin in outplugins:
-                        data = plugin.execute(data)
-                remote_socket.send(data.encode() if isinstance(data, str) else data)
-            else:
-                print("Connection from local client %s:%d closed" % peer)
-                remote_socket.close()
-                runs = False
-                break
-        elif(sock == remote_socket):
-            if(len(data)):
-                # todo logs of incoming data <<<
-                if(inplugins is not None):
-                    for plugin in inplugins:
-                        data = plugin.execute(data)
-                local_socket.send(data.encode()if isinstance(data, str) else data)
-            else:
-                print("Connection from remote client %s:%d closed" % peer)
-                local_socket.close()
-                runs = False
-                break
-        
-
+            if(sock == local_socket):
+                if(len(data)):
+                    # todo logs of outgoing data >>>
+                    if(outplugins is not None):
+                        for plugin in outplugins:
+                            data = plugin.execute(data)
+                    remote_socket.send(data.encode() if isinstance(data, str) else data)
+                else:
+                    print("Connection from local client %s:%d closed" % peer)
+                    remote_socket.close()
+                    runs = False
+                    break
+            elif(sock == remote_socket):
+                if(len(data)):
+                    # todo logs of incoming data <<<
+                    if(inplugins is not None):
+                        for plugin in inplugins:
+                            data = plugin.execute(data)
+                    local_socket.send(data.encode()if isinstance(data, str) else data)
+                else:
+                    print("Connection from remote client %s:%d closed" % peer)
+                    local_socket.close()
+                    runs = False
+                    break
             
 if __name__ == "__main__":
     main()
